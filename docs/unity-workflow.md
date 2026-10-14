@@ -119,3 +119,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\unity-build.ps1 -Tar
 | 场景合并后打开是空白/报错 | 用了文本合并。回滚该文件，改用 SmartMerge 重新合并 |
 | Hub 里看不到编辑器 | `tools/create-unity-project.ps1` 与 `unity-build.ps1` 都能自动搜索；Hub 里用 `Locate` 指向编辑器目录 |
 | 构建卡在 "Licensing" | 许可证未激活，打开 Hub 登录并激活 Personal |
+| **Unity 启动即崩溃，事件日志里是 `HandleProjectAlreadyOpenInAnotherInstance`** | **同一个工程被两个 Unity 实例同时打开**（最常见是重复双击、或一个后台实例没退干净）。Unity 对这种冲突是**直接致命退出并生成 dump**，不是弹窗提示 |
+| 上面那种情况之后再也打不开工程 | 崩溃会残留 `MyGame/Temp/UnityLockfile`。确认没有 Unity 进程后删掉它即可 |
+
+> ⚠️ **务必确认只有一个 Unity 实例**。命令行/脚本启动 Unity 时特别注意：
+> `Unity.exe` 是 GUI 子系统程序，PowerShell 用 `& Unity.exe ...` **不会等待**，
+> 看起来"秒退"其实进程还在后台跑，随后再启动第二个实例就会撞车崩溃。
+> 脚本里要用 `Start-Process -Wait -PassThru`，并且启动前先确认没有别的实例。
