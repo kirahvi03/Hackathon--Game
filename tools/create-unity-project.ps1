@@ -110,25 +110,42 @@ if ($tpl) {
     & tar.exe -xzf $tpl.FullName -C $staging
     if ($LASTEXITCODE -ne 0) { throw "tar 解压失败（exit $LASTEXITCODE）" }
 
-    # 模板 tgz 的根一般是 package/，其中才是真正的工程骨架
-    $src = Join-Path $staging 'package'
-    if (-not (Test-Path $src)) {
-        $src = (Get-ChildItem $staging -Directory | Select-Object -First 1).FullName
+    # 实测的官方模板布局（2022.3.62f3c1）：
+    #   package/ProjectData~/          <- 真正的工程骨架：Assets / Packages / ProjectSettings
+    #   package/ProjectData~/Library/  <- 98MB 预建 Artifact 缓存，不复制（Unity 会重建）
+    #   package/package.json           <- 模板自身的描述文件，不属于工程
+    $pkgRoot = Join-Path $staging 'package'
+    if (-not (Test-Path $pkgRoot)) {
+        $pkgRoot = (Get-ChildItem $staging -Directory | Select-Object -First 1).FullName
     }
-    if (-not $src -or -not (Test-Path $src)) { throw '解压后找不到工程骨架目录' }
+    $src = Join-Path $pkgRoot 'ProjectData~'
+    if (-not (Test-Path $src)) { $src = $pkgRoot }
+    if (-not (Test-Path $src)) { throw '解压后找不到工程骨架目录' }
+    Write-Host ("  骨架目录: {0}" -f (Split-Path -Leaf $src)) -ForegroundColor DarkGray
 
-    Write-Host '  铺到目标目录...' -ForegroundColor DarkGray
-    Copy-Item -Path (Join-Path $src '*') -Destination $TargetPath -Recurse -Force
-
-    # 模板描述文件不属于工程本身
-    $descriptor = Join-Path $TargetPath 'package.json'
-    if (Test-Path $descriptor) { Remove-Item $descriptor -Force }
+    Write-Host '  铺到目标目录（跳过 Library 预建缓存）...' -ForegroundColor DarkGray
+    foreach ($sub in 'Assets', 'Packages', 'ProjectSettings') {
+        $from = Join-Path $src $sub
+        if (Test-Path $from) {
+            Copy-Item -Path $from -Destination $TargetPath -Recurse -Force
+            Write-Host ("    + {0}" -f $sub) -ForegroundColor DarkGray
+        }
+    }
 
     Remove-Item $staging -Recurse -Force -ErrorAction SilentlyContinue
 } else {
     Write-Host '  退化为 Unity -createProject（默认设置）' -ForegroundColor DarkYellow
     & $unityExe -batchmode -quit -nographics -createProject $TargetPath -logFile -
     Write-Host ("  Unity exit={0}" -f $LASTEXITCODE) -ForegroundColor DarkGray
+}
+
+# 官方模板不含 ProjectVersion.txt（Unity 首次打开时才写）。这里按已安装编辑器补上，
+# 让 Unity Hub 能直接识别版本；Unity 打开后会自行补全 revision。
+$pvPath = Join-Path $TargetPath 'ProjectSettings\ProjectVersion.txt'
+if (-not (Test-Path $pvPath)) {
+    $editorVersion = Split-Path -Leaf (Split-Path -Parent (Split-Path -Parent $unityExe))
+    Set-Content -Path $pvPath -Value ("m_EditorVersion: {0}" -f $editorVersion) -Encoding ASCII
+    Write-Host ("  [ OK ] 写入 ProjectVersion.txt: {0}" -f $editorVersion) -ForegroundColor Green
 }
 
 # ---- 校验 ----
