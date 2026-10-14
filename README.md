@@ -1,6 +1,6 @@
 # Hackathon -- Game
 
-黑客松的**独立游戏项目**仓库，引擎为 **Unity**（中国版 Hub 3.3.6 已装）。
+黑客松的**独立游戏项目**仓库，引擎为 **Unity**。
 
 > 插件方向的代码在另一个仓库：[Hackathon--Plug-In](https://github.com/kirahvi03/Hackathon--Plug-In)。
 
@@ -11,73 +11,83 @@
 | 项 | 状态 |
 | --- | --- |
 | Unity Hub | ✅ 已装（3.3.6，中国版） |
-| Unity 编辑器 | ⏳ 下载中 —— **2022.3.62f3c1 LTS**（3.76GB，离线安装包） |
-| 许可证 | ❌ 未激活，需在 Unity Hub 登录账号 |
-| Git LFS | ✅ 已在本仓库启用并配好跟踪规则 |
-| 本机硬件 | 16 逻辑核 / 15.5GB 内存 / C 盘剩余 791GB |
+| 许可证 | ✅ 已激活 Personal（`C:\ProgramData\Unity\Unity_lic.ulf`） |
+| Unity 编辑器 | ⏳ 安装包下载中 —— **2022.3.62f3c1 LTS**（3.76GB） |
+| Git LFS | ✅ 已启用并配好跟踪规则 |
+| 工程骨架 | ⏳ 待编辑器装好后用 `tools/create-unity-project.ps1` 生成 |
+| 本机硬件 | 16 逻辑核 / 15.5GB 内存 / C 盘剩余约 790GB |
 
-编辑器安装包位置：`C:\Users\19371\Downloads\UnitySetup64-2022.3.62f3c1.exe`
-（校验：大小 3,759,910,736 bytes，MD5 `546ec5901f3ffc7c5ef5835e4096e381`）
+编辑器安装包：`C:\Users\19371\Downloads\UnitySetup64-2022.3.62f3c1.exe`
+校验基准：大小 `3,759,910,736` bytes，MD5 `546ec5901f3ffc7c5ef5835e4096e381`。
+
+> ⚠️ 这次下载**被中断过两次**（CDN 连接被重置）。脚本用 `curl -C -` 断点续传，
+> 任何一次中断后重跑同一条命令即可接着下，不会从头开始。
 
 ---
 
 ## 2. 编辑器装好后：创建工程
 
-务必**在本仓库根目录内**创建 Unity 工程，否则 Git 与 LFS 跟踪会错位。
-
-1. 打开 **Unity Hub** → 右上角登录 Unity 账号 → 激活 Personal 许可证
-2. `Installs` → `Add` → 选择已下载的安装包，或 `Locate` 指向已安装的编辑器目录
-3. `Projects` → `New project` → 模板建议 **2D (Built-in Render Pipeline)**
-   （黑客松时间紧，2D 出成果最快；3D/URP 也可以，但素材与调优成本更高）
-4. 工程路径选 `C:\Users\19371\Documents\deepseek-harness\hackathon-game`
-   —— 注意 Unity 要求工程目录为**空目录或它自己创建**，所以建议先建子目录：
-
-   ```
-   hackathon-game/
-   └─ MyGame/          ← Unity 工程根（Assets/ Packages/ ProjectSettings/ 在这里）
-   ```
-
-   这样仓库根仍可放 README、脚本与文档。
-
----
-
-## 3. Unity 专用 Git 配置（一次性）
-
-`.gitattributes` 已声明 Unity 的 YAML 资产（场景、预制体、材质等）用 **SmartMerge** 做语义合并，
-避免多人同时改一个场景就冲突到无法合并。需要注册合并驱动：
+**不要**在 Hub 里手点新建，用脚本从编辑器自带的**官方模板**生成——
+这样 `Packages/manifest.json` 的包版本与编辑器版本精确匹配，避免包解析错误：
 
 ```powershell
-# 编辑器安装后运行，自动定位 UnityYAMLMerge.exe 并写入本仓库 git config
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\create-unity-project.ps1
+# 3D：加 -Template 3d
+```
+
+它会：找到已安装编辑器 → 取 `Data\Resources\PackageManager\ProjectTemplates`
+里的官方模板 → 铺到 `MyGame/` → 校验 `Assets/`、`Packages/manifest.json`、
+`ProjectSettings/ProjectVersion.txt` 三件套。
+
+然后注册 Unity 的场景语义合并驱动：
+
+```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\configure-unity-git.ps1
 ```
 
-未配置时 Git 会退化为普通文本合并（不报错，但合并 YAML 场景容易产生坏文件）。
+---
+
+## 3. 文档与脚本
+
+| 文件 | 用途 |
+| --- | --- |
+| [`docs/game-design.md`](docs/game-design.md) | **先填这个**：一句话概念 / 核心循环 / 技术边界 |
+| [`docs/unity-workflow.md`](docs/unity-workflow.md) | 协作约定：`.meta` 必提交、场景冲突、LFS 配额、排错 |
+| `tools/create-unity-project.ps1` | 从官方模板创建工程（版本精确匹配） |
+| `tools/unity-build.ps1` | 命令行批量构建 Windows64 / WebGL |
+| `scripts/configure-unity-git.ps1` | 注册 SmartMerge 合并驱动（每个克隆跑一次） |
 
 ---
 
-## 4. GitHub LFS 配额提醒
-
-GitHub 免费账号的 LFS 额度是 **1GB 存储 + 1GB/月流量**。美术资源（贴图、音频、模型）
-很容易超。建议：
-
-- 贴图注意压缩与分辨率，音频用 `.ogg` 而非 `.wav`
-- 大体积构建产物**不要入库**（`.gitignore` 已排除 `Library/`、`Builds/`、`*.apk` 等），
-  需要分发时走 **GitHub Releases**
-- 用 `git lfs ls-files` 查看当前被 LFS 管理的文件，用 `git lfs status` 看占用
-
----
-
-## 5. 目录规划（建议）
+## 4. 目录结构
 
 ```
 hackathon-game/
 ├─ README.md
-├─ .gitignore            Unity 专用忽略规则
-├─ .gitattributes        LFS + Unity SmartMerge 规则
+├─ .gitignore                    Unity 忽略规则（含子目录工程）
+├─ .gitattributes                LFS + Unity SmartMerge 规则
+├─ docs/
+│  ├─ game-design.md             游戏设计文档（模板，先填）
+│  └─ unity-workflow.md          Unity 协作工作流
 ├─ scripts/
-│  └─ configure-unity-git.ps1
-└─ MyGame/               Unity 工程（由 Unity Hub 创建）
-   ├─ Assets/
-   ├─ Packages/
-   └─ ProjectSettings/
+│  └─ configure-unity-git.ps1    注册 SmartMerge
+├─ tools/
+│  ├─ create-unity-project.ps1   从官方模板创建工程
+│  └─ unity-build.ps1            批量构建
+├─ MyGame/                       ← Unity 工程根（待生成）
+│  ├─ Assets/
+│  ├─ Packages/manifest.json
+│  └─ ProjectSettings/
+└─ Builds/                       构建产物（已忽略，分发走 Releases）
 ```
+
+---
+
+## 5. 已知环境问题
+
+| 问题 | 影响 | 处理 |
+| --- | --- | --- |
+| Unity China CDN 不稳（连接会被重置） | 大文件下载中断 | `curl -C -` 续传，重跑即可 |
+| npm 公网 TLS 中间人（证书 altname `*.bistu.edu.cn`） | 装 Unity 包/素材工具可能失败 | 用 Unity 自带包管理器，或走镜像 |
+| Unity Hub 中国版无 headless CLI | 装不了纯自动化 | 编辑器安装走 GUI 或直接跑离线安装包 |
+| `pwsh` 未安装 | 脚本需 Windows PowerShell 5.1 兼容 | 现有脚本均已在 5.1 下验证 |

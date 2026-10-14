@@ -1,21 +1,25 @@
-# Unity 生成目录，绝不入库
-/[Ll]ibrary/
-/[Tt]emp/
-/[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
-/[Ll]ogs/
-/[Uu]ser[Ss]ettings/
-/[Mm]emoryCaptures/
-/[Rr]ecordings/
-/[Qq]uery[Tt]emp/
+# Unity 生成目录，绝不入库。
+# 注意：模式**不加前导斜杠**，这样无论 Unity 工程在仓库根还是子目录（MyGame/）都能匹配。
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+[Qq]uery[Tt]emp/
+[Mm]ono[Cc]rashReports/
+sysinfo.txt
 
-# 资产对应的 .meta 必须提交（此处是防止被误忽略的保险）
-!/[Aa]ssets/**/*.meta
+# 资产对应的 .meta 必须提交（防止被误忽略的保险）
+!**/[Aa]ssets/**/*.meta
+!**/[Aa]ssets/**/*.asmdef
 
-# 包缓存
-/[Pp]ackages/packages-lock.json.bak
-/[Pp]ackages/*.tgz
+# 包缓存与还原产物
+**/[Pp]ackages/packages-lock.json.bak
+**/[Pp]ackages/*.tgz
 
 # IDE / 编辑器缓存
 .vs/
@@ -48,22 +52,22 @@ ExportedObj/
 *.pdb.meta
 *.mdb.meta
 
-# 崩溃报告
-sysinfo.txt
+# 崩溃报告与打包产物
 crashlytics-build.properties
-
-# 构建产物（体积大，改为走 GitHub Releases 分发）
 *.app
 
 # Addressables 打包产物
-/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+**/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
 # Android 临时资源
-/[Aa]ssets/[Ss]treamingAssets/aa.meta
-/[Aa]ssets/[Ss]treamingAssets/aa/*
+**/[Aa]ssets/[Ss]treamingAssets/aa.meta
+**/[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # OS / 杂项
 .DS_Store
 Thumbs.db
 desktop.ini
 *.log
+
+# 本脚本生成下载的中间产物
+/tools/.cache/

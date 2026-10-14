@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     为当前仓库注册 Unity SmartMerge（UnityYAMLMerge）合并驱动。
 
