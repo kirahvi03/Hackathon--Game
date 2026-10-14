@@ -1,0 +1,69 @@
+# Unity 生成目录，绝不入库
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/[Qq]uery[Tt]emp/
+
+# 资产对应的 .meta 必须提交（此处是防止被误忽略的保险）
+!/[Aa]ssets/**/*.meta
+
+# 包缓存
+/[Pp]ackages/packages-lock.json.bak
+/[Pp]ackages/*.tgz
+
+# IDE / 编辑器缓存
+.vs/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.gradle/
+.consulo/
+
+# 自动生成的解决方案与工程文件
+ExportedObj/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity 生成的 meta（对应上面被忽略的文件）
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# 崩溃报告
+sysinfo.txt
+crashlytics-build.properties
+
+# 构建产物（体积大，改为走 GitHub Releases 分发）
+*.app
+
+# Addressables 打包产物
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# Android 临时资源
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# OS / 杂项
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

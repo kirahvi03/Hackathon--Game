@@ -1,0 +1,55 @@
+# ---- 二进制资源走 Git LFS（避免仓库膨胀） ----
+*.png  filter=lfs diff=lfs merge=lfs -text
+*.jpg  filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.psd  filter=lfs diff=lfs merge=lfs -text
+*.tga  filter=lfs diff=lfs merge=lfs -text
+*.tif  filter=lfs diff=lfs merge=lfs -text
+*.exr  filter=lfs diff=lfs merge=lfs -text
+*.hdr  filter=lfs diff=lfs merge=lfs -text
+*.fbx  filter=lfs diff=lfs merge=lfs -text
+*.obj  filter=lfs diff=lfs merge=lfs -text
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.wav  filter=lfs diff=lfs merge=lfs -text
+*.mp3  filter=lfs diff=lfs merge=lfs -text
+*.ogg  filter=lfs diff=lfs merge=lfs -text
+*.mp4  filter=lfs diff=lfs merge=lfs -text
+*.mov  filter=lfs diff=lfs merge=lfs -text
+*.ttf  filter=lfs diff=lfs merge=lfs -text
+*.otf  filter=lfs diff=lfs merge=lfs -text
+*.dll  filter=lfs diff=lfs merge=lfs -text
+*.so   filter=lfs diff=lfs merge=lfs -text
+*.dylib filter=lfs diff=lfs merge=lfs -text
+*.a    filter=lfs diff=lfs merge=lfs -text
+*.apk  filter=lfs diff=lfs merge=lfs -text
+*.aab  filter=lfs diff=lfs merge=lfs -text
+*.unitypackage filter=lfs diff=lfs merge=lfs -text
+*.zip  filter=lfs diff=lfs merge=lfs -text
+*.7z   filter=lfs diff=lfs merge=lfs -text
+
+# ---- Unity YAML 资产：用 SmartMerge 做语义合并 ----
+# 需要一次性配置合并驱动，见 README「Unity 专用 Git 配置」。
+*.unity            merge=unityyamlmerge eol=lf
+*.prefab           merge=unityyamlmerge eol=lf
+*.asset            merge=unityyamlmerge eol=lf
+*.mat              merge=unityyamlmerge eol=lf
+*.anim             merge=unityyamlmerge eol=lf
+*.controller       merge=unityyamlmerge eol=lf
+*.overrideController merge=unityyamlmerge eol=lf
+*.physicMaterial   merge=unityyamlmerge eol=lf
+*.physicsMaterial2D merge=unityyamlmerge eol=lf
+*.playable         merge=unityyamlmerge eol=lf
+*.signal           merge=unityyamlmerge eol=lf
+*.meta             merge=unityyamlmerge eol=lf
+
+# ---- 文本与行尾符 ----
+* text=auto
+*.cs   diff=csharp text
+*.shader text
+*.hlsl text
+*.cginc text
+*.json text
+*.md   text
+*.ps1  text eol=crlf
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
