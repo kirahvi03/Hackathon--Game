@@ -121,6 +121,26 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\unity-build.ps1 -Tar
 | 构建卡在 "Licensing" | 许可证未激活，打开 Hub 登录并激活 Personal |
 | **Unity 启动即崩溃，事件日志里是 `HandleProjectAlreadyOpenInAnotherInstance`** | **同一个工程被两个 Unity 实例同时打开**（最常见是重复双击、或一个后台实例没退干净）。Unity 对这种冲突是**直接致命退出并生成 dump**，不是弹窗提示 |
 | 上面那种情况之后再也打不开工程 | 崩溃会残留 `MyGame/Temp/UnityLockfile`。确认没有 Unity 进程后删掉它即可 |
+| **启动时弹 `Enter Safe Mode?`，错误来自某个官方包自身**（如 `com.unity.2d.psdimporter` 里 `DecodeType` 找不到） | 那个包在本机的缓存是**残缺副本**（下载中途被中断）。两份缓存都要删：`MyGame/Library/PackageCache/<包>` 和 `%LOCALAPPDATA%\Unity\cache\packages\packages.unity.cn\<包>`，只删一份会被复用。删完仍坏就把它从依赖里去掉 |
+| 想导入 `.psd` 分层素材 | 需要 `com.unity.2d.psdimporter`。本机这份官方包的缓存已损坏、中国源又不稳，**建议美术直接导出 PNG**，不要依赖 PSD 导入 |
+
+### 关于 `com.unity.2d.psdimporter`（2026-10-15 处理记录）
+
+现象：打开工程弹 `Enter Safe Mode?`，`Editor.log` 里的错误却是**官方包自己的代码**：
+
+```
+Library\PackageCache\com.unity.2d.psdimporter@8.1.0\Editor\PSDPlugin\PDNWrapper\PDNDecodeJob.cs(17,16):
+error CS0246: The type or namespace name 'DecodeType' could not be found
+```
+
+排查：全工程 1706 个 `.cs` 文件里**没有任何 `DecodeType` 定义** → 不是我们的代码问题，是包缺文件。
+且全局缓存那份同样缺，说明是**下载被截断**留下的坏副本（缓存文件日期 2025-11-27，是更早一次安装的残留）。
+
+处理：`com.unity.feature.2d` 是唯一依赖它的包，于是**不再用 feature 集，改为显式列 2D 包**，
+`manifest.json` 里去掉 psdimporter。验证结果：包解析 3.08 秒、编译 0 错误、`Assembly-CSharp.dll` 正常产出。
+
+> 教训：`com.unity.feature.2d` 这类**特性集是个黑盒**，它会把 psdimporter 这类我们用不到的重包一起拉进来。
+> 在网络不可靠的环境下，**显式列包**比用特性集更可控 —— 出问题时也能精确定位到某个包。
 
 > ⚠️ **务必确认只有一个 Unity 实例**。命令行/脚本启动 Unity 时特别注意：
 > `Unity.exe` 是 GUI 子系统程序，PowerShell 用 `& Unity.exe ...` **不会等待**，
