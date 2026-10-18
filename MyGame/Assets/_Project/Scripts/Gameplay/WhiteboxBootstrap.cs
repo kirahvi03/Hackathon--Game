@@ -36,10 +36,14 @@ namespace Hackathon.Gameplay
         public float spawnExtent = 3f;
 
         GameObject _floorRoot;
+        bool _built;
         Transform _player;
 
         void Awake()
         {
+            // 防止重复构造（编辑器手动调用 / 热重载）
+            if (_built) return;
+            _built = true;
             Random.InitState(randomSeed);
 
             // 对话系统与 HUD 直接挂在 Boot 上，场景里不需要额外对象或 prefab

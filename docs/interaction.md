@@ -69,3 +69,24 @@ interactable.shootsOnEnd = true;          // 结束时开枪表现
 - 没有打字机效果，也没有分歧选项（对话是线性的）
 - 只有一个 `Interactable` 状态，没有"记忆"（比如被枪击后研究员态度变化）
 - 武装人员开枪后不会真的变成追击 AI —— 只结算了数值与表现
+
+---
+
+## 6. 怎么验证这套功能
+
+编辑器里：菜单 **Hackathon → 白盒冒烟测试**，会在不进入 Play 的情况下构造一次场景并校验：
+
+- 两张立绘能否通过 Resources.Load<Sprite> 取到
+- 是否生成了 1 个研究员 + 2 个武装人员，且都有台词 / 立绘 / 显示名
+- 武装人员是否配置了「开枪 + 扣血 + 降 pH」
+- PlayerVitals.ApplyDamage 的数值是否正确
+
+无头模式（CI / 脚本）也能跑：
+
+```
+Unity.exe -batchmode -nographics -quit -projectPath MyGame ^
+  -executeMethod Hackathon.EditorTools.WhiteboxSmokeTest.RunHeadless
+```
+
+退出码 0 = 全部通过。**注意**：冒烟测试不验证 IMGUI 的实际绘制效果（无头模式没有渲染），
+对话框长相仍需在编辑器里按 Play 亲眼确认。
