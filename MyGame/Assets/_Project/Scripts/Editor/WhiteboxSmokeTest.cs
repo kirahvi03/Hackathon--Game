@@ -128,6 +128,18 @@ namespace Hackathon.EditorTools
                     }
                 }
 
+                // 相机底色要和背景贴图的暗部一致，否则背景板两侧会露出明显色带
+                var cam = Object.FindObjectOfType<Camera>();
+                Check(cam != null, "场景里有相机");
+                if (cam != null)
+                {
+                    Color camBg = cam.backgroundColor;
+                    Check(Mathf.Abs(camBg.r - 0.059f) < 0.02f
+                          && Mathf.Abs(camBg.g - 0.059f) < 0.02f
+                          && Mathf.Abs(camBg.b - 0.055f) < 0.02f,
+                        "相机底色与背景暗部一致 #0F0F0E，实际 #" + ColorUtility.ToHtmlStringRGB(camBg));
+                }
+
                 // 杂物：每件都换成了贴图池里的一张
                 int propChecked = 0;
                 foreach (var destructible in Object.FindObjectsOfType<Destructible>())

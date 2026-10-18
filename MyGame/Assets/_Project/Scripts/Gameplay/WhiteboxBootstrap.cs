@@ -20,7 +20,8 @@ namespace Hackathon.Gameplay
         public int tilesY = 16;
         public Color floorColorA = new Color(0.24f, 0.26f, 0.30f);
         public Color floorColorB = new Color(0.20f, 0.22f, 0.26f);
-        public Color backgroundColor = new Color(0.07f, 0.08f, 0.10f);
+        // 和 floor_lab 的暗部（#0F0F0E）一致：背景板只铺 9.6 宽，两侧溢出画布的区域看不出接缝
+        public Color backgroundColor = new Color(0.059f, 0.059f, 0.055f);
 
         [Header("背景场景贴图")]
         [Tooltip("勾上就用 Resources/Sprites/floor_lab 这一整张场景图当地面；取消勾选回退成菱形瓦片")]
