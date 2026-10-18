@@ -74,6 +74,14 @@ namespace Hackathon.Gameplay
 
         void Update()
         {
+            // 对话打开时冻结移动与攻击，避免边说话边乱跑
+            DialogueSystem dialogue = DialogueSystem.Instance;
+            if (dialogue != null && dialogue.IsOpen)
+            {
+                _body.velocity = Vector2.MoveTowards(_body.velocity, Vector2.zero, acceleration * Time.deltaTime);
+                return;
+            }
+
             Vector2 rawInput = new Vector2(
                 (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f),
                 (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f));

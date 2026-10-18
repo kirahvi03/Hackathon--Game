@@ -28,7 +28,8 @@ namespace Hackathon.Gameplay
         [Header("场景内容")]
         public int smallCrates = 10;
         public int largeMachines = 3;
-        public int creatures = 2;
+        public int researchers = 1;
+        public int guards = 2;
         public int randomSeed = 20261014;
 
         [Header("摆放范围（世界单位，等轴测平面内）")]
@@ -41,10 +42,18 @@ namespace Hackathon.Gameplay
         {
             Random.InitState(randomSeed);
 
+            // 对话系统与 HUD 直接挂在 Boot 上，场景里不需要额外对象或 prefab
+            DialogueSystem dialogue = gameObject.AddComponent<DialogueSystem>();
+            gameObject.AddComponent<HudOverlay>();
+
             BuildCamera();
             BuildFloor();
             _player = BuildPlayer();
             ScatterContent();
+
+            // 对话结束后的扣血 / pH 变化需要主角状态
+            var vitals = _player != null ? _player.GetComponent<PlayerVitals>() : null;
+            if (vitals != null) dialogue.Bind(vitals);
         }
 
         // ---------------------------------------------------------------- 相机
@@ -121,6 +130,8 @@ namespace Hackathon.Gameplay
 
             go.AddComponent<SortByY>();
             go.AddComponent<PlayerController>();
+            go.AddComponent<PlayerVitals>();
+            go.AddComponent<PlayerInteractor>();
 
             return go.transform;
         }
@@ -145,11 +156,16 @@ namespace Hackathon.Gameplay
                     new Vector2(0.9f, 0.7f), BodyClass.Large, 3f, 0f);
             }
 
-            for (int i = 0; i < creatures; i++)
+            for (int i = 0; i < researchers; i++)
             {
-                SpawnBody(root.transform, "Creature",
-                    RandomPointOnFloor(2.2f), new Color(0.55f, 0.82f, 0.45f),
-                    new Vector2(0.45f, 0.45f), BodyClass.Creature, 2f, 0.6f);
+                SpawnCharacter(root.transform, CharacterKind.Researcher,
+                    RandomPointOnFloor(1.6f), new Color(0.86f, 0.84f, 0.74f));
+            }
+
+            for (int i = 0; i < guards; i++)
+            {
+                SpawnCharacter(root.transform, CharacterKind.Guard,
+                    RandomPointOnFloor(1.6f), new Color(0.30f, 0.33f, 0.38f));
             }
         }
 
@@ -189,6 +205,89 @@ namespace Hackathon.Gameplay
             return go;
         }
 
+        // ---------------------------------------------------------------- 可交谈的角色
+
+        Sprite LoadPortrait(string resourceName)
+        {
+            var sprite = Resources.Load<Sprite>("Portraits/" + resourceName);
+            if (sprite == null)
+            {
+                Debug.LogWarning("[Whitebox] 立绘未找到: Resources/Portraits/" + resourceName);
+            }
+            return sprite;
+        }
+
+        /// <summary>研究员会尝试交流；武装人员只丢三句，然后开枪。</summary>
+        static string[] LinesFor(CharacterKind kind)
+        {
+            switch (kind)
+            {
+                case CharacterKind.Guard:
+                    return new[]
+                    {
+                        "……",
+                        "站住。把触手举起来。",
+                        "我不跟标本谈判。"
+                    };
+                default:
+                    return new[]
+                    {
+                        "研究日志 #114：受试体展现出计划之外的工具使用能力。",
+                        "……你能听懂我说话，对吗？那就先把触手放下。",
+                        "它在模仿我的动作。而且它一直在看着我。",
+                        "如果你真的有意识——我需要你证明给我看。"
+                    };
+            }
+        }
+
+        GameObject SpawnCharacter(Transform parent, CharacterKind kind, Vector2 position, Color bodyColor)
+        {
+            bool isGuard = kind == CharacterKind.Guard;
+
+            var go = new GameObject(isGuard ? "Guard" : "Researcher");
+            go.transform.SetParent(parent, false);
+            go.transform.position = position;
+
+            var visual = new GameObject("Visual");
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sprite = WhiteboxSprites.Square;
+            sr.color = bodyColor;
+
+            var body = go.AddComponent<Rigidbody2D>();
+            body.gravityScale = 0f;
+            body.mass = 1.2f;
+            body.drag = 6f;
+
+            var col = go.AddComponent<CircleCollider2D>();
+            col.radius = 0.3f;
+
+            go.AddComponent<SortByY>();
+
+            var target = go.AddComponent<Destructible>();
+            target.bodyClass = BodyClass.Creature;
+            target.integrity = isGuard ? 3f : 2f;
+            target.knockbackScale = isGuard ? 0.3f : 0.6f;
+            target.debrisColor = bodyColor;
+            target.debrisCount = 5;
+
+            var interactable = go.AddComponent<Interactable>();
+            interactable.kind = kind;
+            interactable.displayName = isGuard ? "武装人员" : "研究员";
+            interactable.lines = LinesFor(kind);
+            interactable.portrait = LoadPortrait(isGuard ? "guard" : "researcher");
+            interactable.singleUse = true;
+
+            // 武装人员：谈完就开枪 —— 轻微受伤 + pH 向酸性偏移
+            interactable.shootsOnEnd = isGuard;
+            interactable.healthDamageOnEnd = isGuard ? 8f : 0f;
+            interactable.phDeltaOnEnd = isGuard ? -0.35f : 0f;
+
+            return go;
+        }
+
         Vector2 RandomPointOnFloor(float minDistanceFromCenter = 0.6f)
         {
             for (int attempt = 0; attempt < 12; attempt++)
@@ -205,10 +304,15 @@ namespace Hackathon.Gameplay
 
         void OnGUI()
         {
-            GUI.Label(new Rect(12f, 10f, 560f, 22f),
-                "WASD 移动（屏幕方向）　F 触手扑击　—— 白盒验证场景");
-            GUI.Label(new Rect(12f, 30f, 560f, 22f),
-                "目标：小物件一碰就碎 / 大机器被击变形 / 生物受伤后退，检查等轴测前后遮挡是否正确");
+            var uiFont = UiFont.Get();
+            if (uiFont != null) GUI.skin.font = uiFont;
+            // 状态条与操作提示由 HudOverlay 绘制，这里只放本场景的验证目标
+            var style = new GUIStyle(GUI.skin.label);
+            style.fontSize = 14;
+            style.alignment = TextAnchor.UpperRight;
+            style.normal.textColor = new Color(0.72f, 0.72f, 0.68f, 0.9f);
+            GUI.Label(new Rect(Screen.width - 640f, 14f, 620f, 22f),
+                "白盒验证：小物件碎 / 大机器变形 / 生物受伤后退 / 对角色按 E 对话", style);
         }
     }
 }
