@@ -12,8 +12,10 @@ namespace Hackathon.Gameplay
     public static class ActorSprites
     {
         public const string OctopusId = "octopus";
+        public const string OctopusAttackId = "octopus_attack";   // 按 F 时临时换上的攻击动作
         public const string ResearcherId = "researcher";
         public const string GuardId = "guard";
+        public const string FloorId = "floor_lab";                // 场景背景（整张地面）
 
         static readonly Dictionary<string, Sprite> Cache = new Dictionary<string, Sprite>();
 

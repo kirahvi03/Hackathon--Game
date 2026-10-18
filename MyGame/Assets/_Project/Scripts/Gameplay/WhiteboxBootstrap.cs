@@ -22,6 +22,17 @@ namespace Hackathon.Gameplay
         public Color floorColorB = new Color(0.20f, 0.22f, 0.26f);
         public Color backgroundColor = new Color(0.07f, 0.08f, 0.10f);
 
+        [Header("背景场景贴图")]
+        [Tooltip("勾上就用 Resources/Sprites/floor_lab 这一整张场景图当地面；取消勾选回退成菱形瓦片")]
+        public bool useBackgroundPlate = true;
+
+        [Tooltip("背景贴图铺多宽（世界单位），够盖住整个场地即可")]
+        public float backgroundPlateWidth = 9.6f;
+
+        [Header("杂物贴图尺寸（世界单位宽度）")]
+        public float smallPropWidth = 0.78f;
+        public float largePropWidth = 1.7f;
+
         [Header("相机")]
         public float orthographicSize = 5f;
 
@@ -88,6 +99,28 @@ namespace Hackathon.Gameplay
         void BuildFloor()
         {
             _floorRoot = new GameObject("Floor");
+
+            // 优先用整张场景贴图当背景；加载失败才回退到白盒菱形瓦片
+            if (useBackgroundPlate)
+            {
+                Sprite plate = ActorSprites.Load(ActorSprites.FloorId);
+                if (plate != null && plate.bounds.size.x > 0.0001f)
+                {
+                    var backdrop = new GameObject("Backdrop");
+                    backdrop.transform.SetParent(_floorRoot.transform, false);
+
+                    var rsr = backdrop.AddComponent<SpriteRenderer>();
+                    rsr.sprite = plate;
+                    rsr.color = Color.white;
+                    rsr.sortingOrder = -1000;      // 永远在最底层
+
+                    float scale = backgroundPlateWidth / plate.bounds.size.x;
+                    backdrop.transform.localScale = new Vector3(scale, scale, 1f);
+                    backdrop.transform.position = Vector3.zero;   // 场地中心在原点
+
+                    return;
+                }
+            }
 
             // 菱形精灵正好 1 宽 0.5 高，因此世界间距取 0.5 就能无缝拼满
             const float step = 0.5f;
@@ -203,6 +236,11 @@ namespace Hackathon.Gameplay
             var sr = visual.AddComponent<SpriteRenderer>();
             sr.sprite = WhiteboxSprites.Square;
             sr.color = color;
+
+            // 杂物贴图：大件与小件各用各的池子，按贴图自身比例缩放（Fit 会覆盖上面的 localScale）
+            int propHash = Mathf.Abs(Mathf.RoundToInt(position.x * 73f + position.y * 137f));
+            float propWidth = bodyClass == BodyClass.Large ? largePropWidth : smallPropWidth;
+            PropSprites.Fit(sr, PropSprites.Pick(bodyClass, propHash), propWidth);
 
             var body = go.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;

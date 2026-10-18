@@ -49,6 +49,14 @@ namespace Hackathon.EditorTools
                 Check(ActorSprites.Load(ActorSprites.ResearcherId) != null, "俯视贴图 researcher 可加载");
                 Check(ActorSprites.Load(ActorSprites.GuardId) != null, "俯视贴图 guard 可加载");
 
+                // 攻击差分图、场景背景、杂物贴图
+                Check(ActorSprites.Load(ActorSprites.OctopusAttackId) != null, "攻击差分图 octopus_attack 可加载");
+                Check(ActorSprites.Load(ActorSprites.FloorId) != null, "场景背景 floor_lab 可加载");
+                foreach (string propId in PropSprites.AllIds)
+                {
+                    Check(PropSprites.Load(propId) != null, "杂物贴图可加载: " + propId);
+                }
+
                 var boot = new GameObject("Boot__SmokeTest");
                 var bootstrap = boot.AddComponent<WhiteboxBootstrap>();
                 boot.SendMessage("Awake", SendMessageOptions.DontRequireReceiver);
@@ -103,6 +111,36 @@ namespace Hackathon.EditorTools
                     var playerBody = player.GetComponent<Rigidbody2D>();
                     Check(playerBody != null && playerBody.freezeRotation, "主角刚体锁定旋转（只能翻转，不能转圈）");
                 }
+
+                // 背景：一整张场景贴图，而不是 256 块菱形瓦片
+                var floorRoot = GameObject.Find("Floor");
+                Check(floorRoot != null, "生成了 Floor");
+                if (floorRoot != null)
+                {
+                    var floorRenderers = floorRoot.GetComponentsInChildren<SpriteRenderer>();
+                    Check(floorRenderers.Length == 1,
+                        "背景是单张贴图（渲染器数 = " + floorRenderers.Length + "，回退瓦片时会是 256）");
+                    if (floorRenderers.Length == 1)
+                    {
+                        Check(floorRenderers[0].sprite != null && floorRenderers[0].sprite.name == "floor_lab",
+                            "背景挂的是 floor_lab");
+                        Check(floorRenderers[0].sortingOrder <= -1000, "背景在最底层");
+                    }
+                }
+
+                // 杂物：每件都换成了贴图池里的一张
+                int propChecked = 0;
+                foreach (var destructible in Object.FindObjectsOfType<Destructible>())
+                {
+                    if (destructible.bodyClass == BodyClass.Creature) continue;
+
+                    propChecked++;
+                    var propRenderer = destructible.GetComponentInChildren<SpriteRenderer>();
+                    string propName = propRenderer != null && propRenderer.sprite != null ? propRenderer.sprite.name : "(null)";
+                    Check(System.Array.IndexOf(PropSprites.AllIds, propName) >= 0,
+                        "杂物 " + destructible.name + " 挂上了贴图: " + propName);
+                }
+                Check(propChecked >= 13, "至少生成了 13 件杂物（10 小件 + 3 大件），实际 " + propChecked);
 
                 var vitals = Object.FindObjectOfType<PlayerVitals>();
                 Check(vitals != null, "主角有 PlayerVitals");

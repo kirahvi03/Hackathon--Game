@@ -53,6 +53,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\configure-unity-gi
 | --- | --- |
 | [`docs/game-design.md`](docs/game-design.md) | **先填这个**：一句话概念 / 核心循环 / 技术边界 |
 | [`docs/unity-workflow.md`](docs/unity-workflow.md) | 协作约定：`.meta` 必提交、场景冲突、LFS 配额、排错 |
+| [`docs/sprites.md`](docs/sprites.md) | 贴图资源清单与替换方法（角色 / 攻击差分图 / 背景 / 杂物） |
 | `tools/create-unity-project.ps1` | 从官方模板创建工程（版本精确匹配） |
 | `tools/unity-build.ps1` | 命令行批量构建 Windows64 / WebGL |
 | `scripts/configure-unity-git.ps1` | 注册 SmartMerge 合并驱动（每个克隆跑一次） |
@@ -68,6 +69,7 @@ hackathon-game/
 ├─ .gitattributes                LFS + Unity SmartMerge 规则
 ├─ docs/
 │  ├─ game-design.md             游戏设计文档（模板，先填）
+│  ├─ sprites.md                 贴图资源清单与替换方法
 │  └─ unity-workflow.md          Unity 协作工作流
 ├─ scripts/
 │  └─ configure-unity-git.ps1    注册 SmartMerge

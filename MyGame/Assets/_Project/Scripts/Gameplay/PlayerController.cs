@@ -46,9 +46,17 @@ namespace Hackathon.Gameplay
 
         public KeyCode strikeKey = KeyCode.F;
 
+        [Header("攻击动作贴图")]
+        [Tooltip("按 F 时把贴图换成攻击差分图，保持这么久后切回原本的贴图（秒）")]
+        public float attackSpriteHoldSeconds = 1f;
+
         Rigidbody2D _body;
         SpriteRenderer _visual;
         Color _baseColor;
+
+        Sprite _idleSprite;      // 平时那张
+        Sprite _attackSprite;    // 攻击差分图，加载失败就是 null
+        float _attackSpriteUntil;
 
         Vector2 _facing = Vector2.right;
         float _nextStrikeTime;
@@ -64,7 +72,14 @@ namespace Hackathon.Gameplay
         {
             _body = GetComponent<Rigidbody2D>();
             _visual = GetComponentInChildren<SpriteRenderer>();
-            if (_visual != null) _baseColor = _visual.color;
+            if (_visual != null)
+            {
+                _baseColor = _visual.color;
+                _idleSprite = _visual.sprite;
+            }
+
+            // 攻击差分图：图里触手是张开的，只在这种"出招"瞬间用
+            _attackSprite = ActorSprites.Load(ActorSprites.OctopusAttackId);
 
             _body.gravityScale = 0f;
             _body.drag = drag;
@@ -115,8 +130,19 @@ namespace Hackathon.Gameplay
             // 1) 自身前冲：用速度覆盖，手感是"窜出去一下"
             _body.velocity = _facing * lungeImpulse;
 
-            // 2) 视觉反馈：闪一下颜色
-            if (_visual != null) _visual.color = new Color(1f, 0.85f, 0.3f, 1f);
+            // 2) 视觉反馈：有攻击差分图就换图，没有才退回"闪一下颜色"
+            if (_visual != null)
+            {
+                if (_attackSprite != null)
+                {
+                    _visual.sprite = _attackSprite;
+                    _attackSpriteUntil = Time.time + attackSpriteHoldSeconds;
+                }
+                else
+                {
+                    _visual.color = new Color(1f, 0.85f, 0.3f, 1f);
+                }
+            }
 
             // 3) 判定：身体前方的圆形范围
             Vector2 center = (Vector2)transform.position + _facing * strikeReach;
@@ -141,6 +167,13 @@ namespace Hackathon.Gameplay
 
         void LateUpdate()
         {
+            // 攻击动作保持时间到了，切回平时的贴图
+            if (_visual != null && _attackSprite != null && _attackSpriteUntil > 0f && Time.time >= _attackSpriteUntil)
+            {
+                _attackSpriteUntil = 0f;
+                if (_idleSprite != null) _visual.sprite = _idleSprite;
+            }
+
             // 扑击闪光结束，恢复原色
             if (_visual != null && !IsStriking && _visual.color != _baseColor)
             {
