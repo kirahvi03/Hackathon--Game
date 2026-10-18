@@ -84,6 +84,10 @@ namespace Hackathon.Gameplay
 
         void DrawControls()
         {
+            // 对话打开时隐藏操作提示（对话框会盖住这个位置）
+            DialogueSystem dialogue = DialogueSystem.Instance;
+            if (dialogue != null && dialogue.IsOpen) return;
+
             var style = LabelStyle(14f, TextAnchor.LowerLeft);
             style.normal.textColor = new Color(0.7f, 0.7f, 0.66f, 0.9f);
             GUI.Label(new Rect(20f, Screen.height - 30f, 700f, 22f),
