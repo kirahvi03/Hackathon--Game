@@ -49,6 +49,9 @@ Resources/
    按 `backgroundPlateWidth` 等比缩放到盖住整个场地（场地约 8.5 × 4.5 世界单位，所以 9.6 足够）。
 2. **`useBackgroundPlate = false` 或图片缺失**：回退成 16×16 的菱形瓦片（每块 1×0.5，间距 0.5，棋盘两色）。
 
+当前这张 `floor_lab.png` 是俯视房间：四周是亮的实验台/墙壁边，中间偏暗是地面，整张当一块地板用，**不平铺**
+（左右边缘不接缝，平铺会出现明显断裂）。原图 2048×2048，压到 1024×1024。
+
 ## 杂物
 
 `ScatterContent()` 生成 10 个小件（`BodyClass.Small`）和 3 个大件（`BodyClass.Large`）。
