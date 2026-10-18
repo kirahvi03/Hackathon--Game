@@ -1,4 +1,7 @@
 # ---- 二进制资源走 Git LFS（避免仓库膨胀） ----
+# ---- 行尾符基准：必须放在二进制规则之前，后面的 -text 才能生效 ----
+* text=auto
+
 *.png  filter=lfs diff=lfs merge=lfs -text
 *.jpg  filter=lfs diff=lfs merge=lfs -text
 *.jpeg filter=lfs diff=lfs merge=lfs -text
@@ -43,7 +46,6 @@
 *.meta             merge=unityyamlmerge eol=lf
 
 # ---- 文本与行尾符 ----
-* text=auto
 *.cs   diff=csharp text
 *.shader text
 *.hlsl text
