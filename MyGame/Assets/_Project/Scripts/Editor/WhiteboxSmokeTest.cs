@@ -67,6 +67,12 @@ namespace Hackathon.EditorTools
                     string expectedSprite = it.kind == CharacterKind.Guard ? "guard" : "researcher";
                     Check(actorRenderer != null && actorRenderer.sprite != null && actorRenderer.sprite.name == expectedSprite,
                         it.displayName + " 挂上了 " + expectedSprite + " 俯视贴图");
+
+                    Check(actorRenderer != null && Mathf.Abs(actorRenderer.bounds.size.y - 1.52f) < 0.05f,
+                        it.displayName + " 贴图高度 ≈ 1.52（1.9 的 80%）");
+
+                    var actorBody = it.GetComponent<Rigidbody2D>();
+                    Check(actorBody != null && actorBody.freezeRotation, it.displayName + " 被推开时不转圈");
                     Check(!string.IsNullOrEmpty(it.displayName), "角色有显示名");
 
                     if (it.kind == CharacterKind.Researcher) researchers++;
@@ -91,6 +97,11 @@ namespace Hackathon.EditorTools
                     Check(playerRenderer != null && playerRenderer.sprite != null && playerRenderer.sprite.name == "octopus",
                         "主角挂上了章鱼贴图");
                     Check(player.GetComponent<SpriteFacing>() != null, "主角有左右翻转组件");
+                    Check(playerRenderer != null && Mathf.Abs(playerRenderer.bounds.size.y - 1.6f) < 0.05f,
+                        "主角贴图高度 ≈ 1.6");
+
+                    var playerBody = player.GetComponent<Rigidbody2D>();
+                    Check(playerBody != null && playerBody.freezeRotation, "主角刚体锁定旋转（只能翻转，不能转圈）");
                 }
 
                 var vitals = Object.FindObjectOfType<PlayerVitals>();

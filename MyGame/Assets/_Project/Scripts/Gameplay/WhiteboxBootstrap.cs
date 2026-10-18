@@ -37,7 +37,7 @@ namespace Hackathon.Gameplay
 
         [Header("角色贴图尺寸（世界单位高度）")]
         public float playerSpriteHeight = 1.6f;
-        public float characterSpriteHeight = 1.9f;
+        public float characterSpriteHeight = 1.52f;   // 原 1.9 的 80%
 
         GameObject _floorRoot;
         bool _built;
@@ -138,6 +138,7 @@ namespace Hackathon.Gameplay
             var body = go.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;
             body.mass = 1.2f;
+            body.freezeRotation = true;   // 章鱼不转圈，唯一的转向是 SpriteFacing 的左右翻转
 
             var col = go.AddComponent<CircleCollider2D>();
             col.radius = 0.26f;
@@ -285,6 +286,7 @@ namespace Hackathon.Gameplay
             body.gravityScale = 0f;
             body.mass = 1.2f;
             body.drag = 6f;
+            body.freezeRotation = true;   // 被扑击时只被推开，不转圈
 
             var col = go.AddComponent<CircleCollider2D>();
             col.radius = 0.3f;

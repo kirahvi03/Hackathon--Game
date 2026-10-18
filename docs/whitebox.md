@@ -135,8 +135,12 @@
   不依赖 PPU，换图换分辨率都不用改代码
 - `Gameplay/SpriteFacing.cs`：按 `Rigidbody2D.velocity.x` 翻转 `flipX`，
   所以向左跑会自然镜像
-- `WhiteboxBootstrap`：`playerSpriteHeight = 1.6`、`characterSpriteHeight = 1.9`，
-  想做大小怪就调这两个数；贴图加载失败会静默回退到白盒方块（不会崩）
+- `WhiteboxBootstrap`：`playerSpriteHeight = 1.6`、`characterSpriteHeight = 1.52`
+  （人类角色按 1.9 的 80% 缩过，和章鱼站一起比例更合理），想做大小怪就调这两个数；
+  贴图加载失败会静默回退到白盒方块（不会崩）
+- **旋转**：章鱼的刚体 `freezeRotation = true`（Bootstrap 与 PlayerController 双保险），
+  碰撞和扑击冲量都不会把身体拧歪；唯一的"转向"是 `SpriteFacing` 按速度做的左右翻转。
+  研究员/武装人员同样锁了旋转，被扑击只被推开、不转圈
 
 ### 换美术的流程
 

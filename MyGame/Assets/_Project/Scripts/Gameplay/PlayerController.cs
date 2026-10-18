@@ -70,6 +70,11 @@ namespace Hackathon.Gameplay
             _body.drag = drag;
             _body.interpolation = RigidbodyInterpolation2D.Interpolate;
             _body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            // 章鱼永远不旋转：碰撞、冲量都不许把身体拧歪。
+            // 唯一的"转向"是 SpriteFacing 按速度做的左右翻转。
+            _body.freezeRotation = true;
+            _body.angularVelocity = 0f;
         }
 
         void Update()
