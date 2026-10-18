@@ -107,3 +107,39 @@
 4. **Dither 后处理**：Built-in 的 `OnRenderImage` + Bayer 矩阵
 5. **音效**：破坏/扑击的反馈音，成本低但手感提升明显
 6. **等轴测瓦片关卡**：用 `com.unity.2d.tilemap.extras` 的等轴测瓦片替换代码生成的地面
+
+---
+
+## 7. 俯视贴图（章鱼 / 研究员 / 武装人员）
+
+白盒方块已经被替换成真正的俯视像素贴图。
+
+### 资源位置
+
+`MyGame/Assets/_Project/Resources/Sprites/`
+
+| 文件 | 用途 | 内容尺寸 |
+| --- | --- | --- |
+| `octopus.png` | 主角（章鱼） | 1350x1204 |
+| `researcher.png` | 研究员 | 920x1310 |
+| `guard.png` | 武装人员 | 1194x1296 |
+
+三张都是 512x512 RGBA，透明背景，四周留了约 2% 的呼吸边。
+导入设置由编辑器自动生成（`textureType: 8` Sprite、`filterMode: 1` Bilinear、`spritePixelsToUnits: 100`），
+脚本加载后会把 filterMode 强制改成 Point，保证像素颗粒不被插值糊掉。
+
+### 代码怎么接的
+
+- `Gameplay/ActorSprites.cs`：`Load(id)` 走 `Resources.Load<Sprite>("Sprites/" + id)`，
+  带缓存、带失败警告；`Fit(renderer, sprite, targetHeight)` 按**世界单位高度**缩放，
+  不依赖 PPU，换图换分辨率都不用改代码
+- `Gameplay/SpriteFacing.cs`：按 `Rigidbody2D.velocity.x` 翻转 `flipX`，
+  所以向左跑会自然镜像
+- `WhiteboxBootstrap`：`playerSpriteHeight = 1.6`、`characterSpriteHeight = 1.9`，
+  想做大小怪就调这两个数；贴图加载失败会静默回退到白盒方块（不会崩）
+
+### 换美术的流程
+
+1. 把新图丢进 `Resources/Sprites/`，文件名保持不变就能直接生效
+2. 图要用**透明背景 PNG**，主体居中，下方留一点脚底空白
+3. 不要改 PPU —— `Fit()` 只看 `sprite.bounds`，PPU 怎么设都行

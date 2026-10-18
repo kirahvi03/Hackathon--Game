@@ -35,6 +35,10 @@ namespace Hackathon.Gameplay
         [Header("摆放范围（世界单位，等轴测平面内）")]
         public float spawnExtent = 3f;
 
+        [Header("角色贴图尺寸（世界单位高度）")]
+        public float playerSpriteHeight = 1.6f;
+        public float characterSpriteHeight = 1.9f;
+
         GameObject _floorRoot;
         bool _built;
         Transform _player;
@@ -121,9 +125,15 @@ namespace Hackathon.Gameplay
             visual.transform.SetParent(go.transform, false);
             visual.transform.localScale = new Vector3(0.55f, 0.55f, 1f);
 
+            // 章鱼俯视贴图；加载失败才退回白盒方块
             var sr = visual.AddComponent<SpriteRenderer>();
-            sr.sprite = WhiteboxSprites.Square;
-            sr.color = new Color(0.85f, 0.35f, 0.55f);
+            sr.color = Color.white;
+            if (!ActorSprites.Fit(sr, ActorSprites.Load(ActorSprites.OctopusId), playerSpriteHeight))
+            {
+                sr.sprite = WhiteboxSprites.Square;
+                sr.color = new Color(0.85f, 0.35f, 0.55f);
+                visual.transform.localScale = new Vector3(0.55f, 0.55f, 1f);
+            }
 
             var body = go.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;
@@ -131,6 +141,10 @@ namespace Hackathon.Gameplay
 
             var col = go.AddComponent<CircleCollider2D>();
             col.radius = 0.26f;
+
+            var facing = go.AddComponent<SpriteFacing>();
+            facing.target = sr;
+            facing.body = body;
 
             go.AddComponent<SortByY>();
             go.AddComponent<PlayerController>();
@@ -256,9 +270,16 @@ namespace Hackathon.Gameplay
             visual.transform.SetParent(go.transform, false);
             visual.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
 
+            // 研究员 / 武装人员的俯视贴图；加载失败才退回白盒方块
             var sr = visual.AddComponent<SpriteRenderer>();
-            sr.sprite = WhiteboxSprites.Square;
-            sr.color = bodyColor;
+            sr.color = Color.white;
+            Sprite actorSprite = ActorSprites.Load(isGuard ? ActorSprites.GuardId : ActorSprites.ResearcherId);
+            if (!ActorSprites.Fit(sr, actorSprite, characterSpriteHeight))
+            {
+                sr.sprite = WhiteboxSprites.Square;
+                sr.color = bodyColor;
+                visual.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+            }
 
             var body = go.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;

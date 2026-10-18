@@ -44,6 +44,11 @@ namespace Hackathon.EditorTools
                 Check(Resources.Load<Sprite>("Portraits/researcher") != null, "立绘 researcher 可加载");
                 Check(Resources.Load<Sprite>("Portraits/guard") != null, "立绘 guard 可加载");
 
+                // 俯视贴图能被 Resources 加载
+                Check(ActorSprites.Load(ActorSprites.OctopusId) != null, "俯视贴图 octopus 可加载");
+                Check(ActorSprites.Load(ActorSprites.ResearcherId) != null, "俯视贴图 researcher 可加载");
+                Check(ActorSprites.Load(ActorSprites.GuardId) != null, "俯视贴图 guard 可加载");
+
                 var boot = new GameObject("Boot__SmokeTest");
                 var bootstrap = boot.AddComponent<WhiteboxBootstrap>();
                 boot.SendMessage("Awake", SendMessageOptions.DontRequireReceiver);
@@ -57,6 +62,11 @@ namespace Hackathon.EditorTools
                 {
                     Check(it.lines != null && it.lines.Length > 0, it.displayName + " 有台词");
                     Check(it.portrait != null, it.displayName + " 绑定了立绘");
+
+                    var actorRenderer = it.GetComponentInChildren<SpriteRenderer>();
+                    string expectedSprite = it.kind == CharacterKind.Guard ? "guard" : "researcher";
+                    Check(actorRenderer != null && actorRenderer.sprite != null && actorRenderer.sprite.name == expectedSprite,
+                        it.displayName + " 挂上了 " + expectedSprite + " 俯视贴图");
                     Check(!string.IsNullOrEmpty(it.displayName), "角色有显示名");
 
                     if (it.kind == CharacterKind.Researcher) researchers++;
@@ -72,6 +82,16 @@ namespace Hackathon.EditorTools
                 Debug.Log("[Smoke] 研究员 = " + researchers + "，武装人员 = " + guards);
                 Check(researchers >= 1, "存在研究员");
                 Check(guards >= 1, "存在武装人员");
+
+                var player = GameObject.Find("Player");
+                Check(player != null, "生成了 Player");
+                if (player != null)
+                {
+                    var playerRenderer = player.GetComponentInChildren<SpriteRenderer>();
+                    Check(playerRenderer != null && playerRenderer.sprite != null && playerRenderer.sprite.name == "octopus",
+                        "主角挂上了章鱼贴图");
+                    Check(player.GetComponent<SpriteFacing>() != null, "主角有左右翻转组件");
+                }
 
                 var vitals = Object.FindObjectOfType<PlayerVitals>();
                 Check(vitals != null, "主角有 PlayerVitals");
